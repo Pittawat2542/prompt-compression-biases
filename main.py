@@ -1,16 +1,76 @@
-# This is a sample Python script.
+import json
+from json import JSONDecodeError
+from pathlib import Path
+from typing import Annotated
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+import typer
+from dotenv import load_dotenv
+from loguru import logger
+
+from src.prompts import story_data_generation_prompt
+from utils.llms import get_generative_model
+from utils.parsers import parse_json_string
+
+app = typer.Typer()
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+@app.command()
+def generate_story_data(gen_model: Annotated[str, typer.Option()], ending_type: Annotated[str, typer.Option()],
+                        n: Annotated[int, typer.Option] = 1):
+    if ending_type not in ['positive', 'negative', 'neutral']:
+        typer.echo("Ending type must be either 'positive', 'negative', or 'neutral'")
+        raise typer.Exit(code=1)
+
+    if n < 1:
+        typer.echo("Number of stories to generate must be at least 1")
+        raise typer.Exit(code=1)
+
+    model = get_generative_model(gen_model)
+    prompt = story_data_generation_prompt.format(ending_type=ending_type)
+
+    logger.info(f"Generating {n} stories with ending type: {ending_type} using model: {gen_model}")
+
+    output_folder = Path(f"outputs/{gen_model}/story_data/{ending_type}")
+    output_folder.mkdir(exist_ok=True, parents=True)
+    logger.info(f"Saving generated stories to: {output_folder}")
+
+    n_generated_stories = len(list(output_folder.glob("*.json")))
+    logger.info(f"Already generated {n_generated_stories} stories")
+
+    i = n_generated_stories
+    while i < n:
+        logger.info(f"Generating story {i + 1}/{n}")
+        logger.info(f"Start generating story with prompt: {prompt}")
+        try:
+            story = model.generate(prompt)
+        except JSONDecodeError as e:
+            logger.error(f"Error generating story: {e}")
+            continue
+        logger.info(f"Story generated: {story}")
+        parsed_content = parse_json_string(story.generated_text)
+        logger.info(f"Story parsed: {parsed_content}")
+
+        output_json = json.loads(story.model_dump_json())
+        output_json['parsed'] = parsed_content
+
+        with open(output_folder / f"story_{i}.json", 'w') as f:
+            json.dump(output_json, f, indent=4)
+        logger.info(f"Story saved to: {output_folder / f'story_{i}.json'}")
+        i += 1
 
 
-# Press the green button in the gutter to run the script.
+@app.command()
+def generate_story_influence():
+    pass
+
+
+@app.command()
+def evaluate_story():
+    pass
+
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    load_dotenv()
+    Path("outputs/logs").mkdir(exist_ok=True, parents=True)
+    logger.add("outputs/logs/{time}.log")
+    app()
