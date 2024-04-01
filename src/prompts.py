@@ -21,9 +21,6 @@ Output:
 
 ending_evaluation_prompt = """Please identify the type of ending in this story. Please make sure to format your output as a code block using triple backticks (```json and ```).
 
-Title: {story_title}
-
-Last Chapter Story:
 {last_chapter_story}
 
 Output format:

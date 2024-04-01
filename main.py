@@ -1,3 +1,4 @@
+import datetime
 import json
 from pathlib import Path
 from typing import Annotated
@@ -9,8 +10,9 @@ from llmlingua import PromptCompressor
 from loguru import logger
 
 from src.models.generative_model_response import GenerativeModelResponse
-from src.prompts import story_data_generation_prompt, last_chapter_generation_prompt
+from src.prompts import story_data_generation_prompt, last_chapter_generation_prompt, ending_evaluation_prompt
 from utils.llms import get_generative_model
+from utils.parsers import parse_json_string
 
 app = typer.Typer()
 
@@ -42,7 +44,7 @@ def generate_story_data(gen_model: Annotated[str, typer.Option()], ending_type: 
     while i < n:
         logger.info(f"Generating story {i + 1}/{n}")
         logger.info(f"Start generating story with prompt: {prompt}")
-        story = model.generate(prompt)
+        story = model.generate(prompt, temperature=None)
         logger.info(f"Story generated: {story}")
 
         output_json = json.loads(story.model_dump_json())
@@ -92,7 +94,7 @@ def generate_story_influence(gen_model: Annotated[str, typer.Option()], approach
             logger.info(f"Saving generated stories to: {output_folder}")
 
             num_generated_stories = len([f for f in output_folder.glob("*.json") if
-                                         f.name.startswith(f'{ending_type.name}_{story_data_file.name}')])
+                                         f.name.startswith(f'{ending_type.name}_{story_data_file.name}_{approach}')])
             logger.info(f"Already generated {num_generated_stories} stories")
 
             story_data = GenerativeModelResponse.model_validate_json(story_data_file.read_text())
@@ -108,20 +110,67 @@ def generate_story_influence(gen_model: Annotated[str, typer.Option()], approach
             while i < n_per_story_data:
                 logger.info(f"Generating story {i + 1}/{n_per_story_data}")
                 logger.info(f"Start generating story with story data: {story_data}")
-                story = model.generate(prompt)
+                story = model.generate(prompt, temperature=None)
                 logger.info(f"Story generated: {story}")
 
                 output_json = json.loads(story.model_dump_json())
 
-                with open(output_folder / f"{ending_type.name}_{story_data_file.name}_influence_{i}.json", 'w') as f:
+                with open(output_folder / f"{ending_type.name}_{story_data_file.name}_{approach}_influence_{i}.json",
+                          'w') as f:
                     json.dump(output_json, f, indent=4)
                 logger.info(
-                    f"Story saved to: {output_folder / f'{ending_type.name}_{story_data_file.name}_influence_{i}.json'}")
+                    f"Story saved to: {output_folder / f'{ending_type.name}_{story_data_file.name}_{approach}_influence_{i}.json'}")
                 i += 1
 
 
 @app.command()
-def evaluate_story():
+def evaluate_story(gen_model: Annotated[str, typer.Option()]):
+    model = get_generative_model(gen_model)
+    logger.info(f"Using model: {gen_model}")
+
+    root_outputs_path = Path("outputs")
+    evaluation_output_path = root_outputs_path / f"{gen_model}/evaluation"
+    story_influence_folders = [f for f in root_outputs_path.glob(f"{gen_model}/story_influence/*") if f.is_dir()]
+
+    for ending_type in story_influence_folders:
+        logger.info(f"Evaluating stories in folder: {ending_type.name}")
+        story_influence_files = [f for f in ending_type.glob("*.json")]
+
+        output_path = evaluation_output_path / ending_type.name
+        output_path.mkdir(exist_ok=True, parents=True)
+
+        i = 0
+        for story_influence_file in story_influence_files:
+            logger.info(f"Evaluating story: {story_influence_file}, {i + 1}/{len(story_influence_files)}")
+            story_influence = GenerativeModelResponse.model_validate_json(story_influence_file.read_text())
+
+            last_chapter = story_influence.generated_text
+            logger.info(f"Last chapter: {last_chapter}")
+
+            prompt = ending_evaluation_prompt.format(last_chapter_story=last_chapter)
+            logger.info(f"Prompt: {prompt}")
+
+            response = model.generate(prompt, temperature=0.0)
+            logger.info(f"Response: {response}")
+
+            parsed_response = parse_json_string(response.generated_text)
+            logger.info(f"Parsed response: {parsed_response}")
+
+            response_obj = response.model_dump()
+            response_obj['from_story_data_ending_type'] = ending_type.name
+            response_obj['generated_story_ending_type'] = parsed_response['ending']
+            response_obj['created_at'] = datetime.datetime.strftime(response.created_at, "%Y-%m-%dT%H:%M:%S.%f")
+            logger.info(f"Response object: {response_obj}")
+
+            output_file_path = output_path / story_influence_file.name
+            with open(output_file_path, 'w') as f:
+                json.dump(response_obj, f, indent=4)
+            logger.info(f"Story influence saved to: {story_influence_file}")
+            i += 1
+
+
+@app.command()
+def analyse():
     pass
 
 
