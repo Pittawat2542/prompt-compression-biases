@@ -179,7 +179,36 @@ def evaluate_story(gen_model: Annotated[str, typer.Option()]):
 
 @app.command()
 def analyse():
-    pass
+    results = {}
+    output_path = Path("outputs")
+    generation_model_folders = [f for f in output_path.glob("*") if f.is_dir() and f.name != "logs"]
+    for generation_model in generation_model_folders:
+        evaluation_files = [f for f in generation_model.glob("evaluation/**/*.json")]
+        logger.info(f"Found {len(evaluation_files)} evaluation files.")
+
+        logger.info("Analysing evaluation files")
+        for evaluation_file in evaluation_files:
+            logger.info(f"Analysing evaluation file: {evaluation_file.name}")
+            evaluation = json.loads(evaluation_file.read_text())
+            generation_model = evaluation['generation_model']
+            from_story_data_ending_type = evaluation['from_story_data_ending_type']
+            generated_story_ending_type = evaluation['generated_story_ending_type']
+            approach = evaluation['approach']
+
+            if approach not in results:
+                results[approach] = {}
+            if generation_model not in results[approach]:
+                results[approach][generation_model] = {}
+            if from_story_data_ending_type not in results[approach][generation_model]:
+                results[approach][generation_model][from_story_data_ending_type] = {}
+                for ending_type in ['positive', 'negative', 'neutral']:
+                    results[approach][generation_model][from_story_data_ending_type][ending_type] = 0
+
+            results[approach][generation_model][from_story_data_ending_type][generated_story_ending_type] += 1
+
+    with open(output_path / "analysis.json", 'w') as f:
+        json.dump(results, f, indent=4)
+        logger.info(f"Analysis saved to: {output_path / 'analysis.json'}")
 
 
 if __name__ == '__main__':
