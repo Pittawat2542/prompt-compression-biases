@@ -124,12 +124,12 @@ def generate_story_influence(gen_model: Annotated[str, typer.Option()], approach
 
 
 @app.command()
-def evaluate_story(gen_model: Annotated[str, typer.Option()]):
-    evaluation_model = get_generative_model(gen_model)
-    logger.info(f"Using model: {gen_model}")
+def evaluate_story(eval_model: Annotated[str, typer.Option()]):
+    evaluation_model = get_generative_model(eval_model)
+    logger.info(f"Using model: {eval_model}")
 
     root_outputs_path = Path("outputs")
-    evaluation_output_path = root_outputs_path / f"{gen_model}/evaluation"
+    evaluation_output_path = root_outputs_path / f"{eval_model}/evaluation"
     models = [f for f in root_outputs_path.glob(f"*") if f.is_dir() and f.name != "logs"]
 
     for generation_model in models:
@@ -164,7 +164,7 @@ def evaluate_story(gen_model: Annotated[str, typer.Option()]):
                 approach = story_influence_file.name.split(".json_")[-1].split("_")[0]
                 response_obj['approach'] = approach
                 response_obj['generation_model'] = generation_model.name
-                response_obj['evaluation_model'] = gen_model
+                response_obj['evaluation_model'] = eval_model
                 response_obj['from_story_data_ending_type'] = ending_type.name
                 response_obj['generated_story_ending_type'] = parsed_response['ending']
                 response_obj['created_at'] = datetime.datetime.strftime(response.created_at, "%Y-%m-%dT%H:%M:%S.%f")
