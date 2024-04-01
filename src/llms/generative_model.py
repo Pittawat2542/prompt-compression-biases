@@ -1,14 +1,8 @@
-import datetime
 from abc import ABC, abstractmethod
 
 from pydantic import BaseModel
 
-
-class GenerativeModelResponse(BaseModel):
-    generated_text: str
-    prompt_token: int
-    generated_token: int
-    created_at: datetime.datetime
+from src.models.generative_model_response import GenerativeModelResponse
 
 
 class GenerativeModel(ABC, BaseModel):

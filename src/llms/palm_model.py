@@ -5,7 +5,8 @@ from typing import Any
 import google.generativeai as palm
 from google.api_core.exceptions import ServiceUnavailable, InternalServerError, TooManyRequests, DeadlineExceeded
 
-from src.llms.generative_model import GenerativeModel, GenerativeModelResponse
+from src.llms.generative_model import GenerativeModel
+from src.models.generative_model_response import GenerativeModelResponse
 
 
 class PaLMGenerativeModel(GenerativeModel):

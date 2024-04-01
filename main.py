@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from loguru import logger
 
 from src.prompts import story_data_generation_prompt
+from src.models.generative_model_response import GenerativeModelResponse
 from utils.llms import get_generative_model
 from utils.parsers import parse_json_string
 

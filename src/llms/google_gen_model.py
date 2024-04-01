@@ -7,7 +7,8 @@ from google.ai.generativelanguage_v1 import HarmCategory
 from google.api_core.exceptions import ServiceUnavailable, InternalServerError, TooManyRequests, DeadlineExceeded
 from google.generativeai.types import HarmBlockThreshold
 
-from src.llms.generative_model import GenerativeModel, GenerativeModelResponse
+from src.llms.generative_model import GenerativeModel
+from src.models.generative_model_response import GenerativeModelResponse
 
 safety_settings = {
     HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,

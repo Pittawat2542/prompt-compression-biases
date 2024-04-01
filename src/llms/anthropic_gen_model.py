@@ -3,7 +3,8 @@ from typing import Any
 
 from anthropic import Anthropic, APITimeoutError, APIConnectionError, RateLimitError, APIError
 
-from src.llms.generative_model import GenerativeModel, GenerativeModelResponse
+from src.llms.generative_model import GenerativeModel
+from src.models.generative_model_response import GenerativeModelResponse
 
 
 class AnthropicGenerativeModel(GenerativeModel):
