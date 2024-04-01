@@ -1,29 +1,26 @@
-story_data_generation_prompt = """Please write a brief 300-word game story synopsis with a {ending_type} ending. Please make sure to format your output as a code block using triple backticks (```json and ```)
+story_data_generation_prompt = """Please write a brief 300-word game story synopsis with a {ending_type} ending. 
+
 Output format:
-```json
-{{
-    "title": game title,
-    "story": game story synopsis until ending
-}}
-```"""
+Title: title of the story
+Story: story synopsis until ending
 
-last_chapter_generation_prompt = """Please write the last chapter of the given story given the following story title and synopsis. Please make sure to format your output as a code block using triple backticks (```json and ```).
+Output:
+"""
 
-Story title:
-{story_title}
+last_chapter_generation_prompt = """Please write the last chapter of the given story given the following story title and synopsis.
 
 Story Synopsis:
 {story_synopsis}
 
 Output format:
-```json
-{{
-    "title": game title,
-    "last_chapter": story of last chapter
-}}
-```"""
+Title: title of the story
+Last Chapter Story: last chapter of the story
 
-ending_evaluation_prompt = """Please identify the type of ending in this story. Please make sure to format your output as a code block using triple backticks (```json and ```)
+Output:
+"""
+
+ending_evaluation_prompt = """Please identify the type of ending in this story. Please make sure to format your output as a code block using triple backticks (```json and ```).
+
 Title: {story_title}
 
 Last Chapter Story:
