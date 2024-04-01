@@ -14,4 +14,5 @@ def parse_json_string(json_string: str) -> dict:
             "JSON markdown block not found in the message. Please use the following format:\n```json\n{...}\n```")
 
     json_string = match[-1][-1].strip()
+    json_string = json.dumps(json_string)
     return json.loads(json_string)

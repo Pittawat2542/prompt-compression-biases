@@ -41,13 +41,13 @@ def generate_story_data(gen_model: Annotated[str, typer.Option()], ending_type: 
     while i < n:
         logger.info(f"Generating story {i + 1}/{n}")
         logger.info(f"Start generating story with prompt: {prompt}")
+        story = model.generate(prompt)
+        logger.info(f"Story generated: {story}")
         try:
-            story = model.generate(prompt)
+            parsed_content = parse_json_string(story.generated_text)
         except JSONDecodeError as e:
             logger.error(f"Error generating story: {e}")
             continue
-        logger.info(f"Story generated: {story}")
-        parsed_content = parse_json_string(story.generated_text)
         logger.info(f"Story parsed: {parsed_content}")
 
         output_json = json.loads(story.model_dump_json())
