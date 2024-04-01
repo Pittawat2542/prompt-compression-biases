@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from typing import Any
 
@@ -21,6 +22,7 @@ class GoogleGenerativeModel(GenerativeModel):
 
     def __init__(self, **data: Any):
         super().__init__(**data)
+        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
         self._client = genai.GenerativeModel(self.model)
 
     def generate(self, prompt: str) -> GenerativeModelResponse:
