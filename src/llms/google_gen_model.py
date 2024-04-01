@@ -1,10 +1,11 @@
 import os
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 import google.generativeai as genai
 from google.ai.generativelanguage_v1 import HarmCategory
 from google.api_core.exceptions import ServiceUnavailable, InternalServerError, TooManyRequests, DeadlineExceeded
+from google.generativeai import GenerationConfig
 from google.generativeai.types import HarmBlockThreshold
 
 from src.llms.generative_model import GenerativeModel
@@ -26,10 +27,11 @@ class GoogleGenerativeModel(GenerativeModel):
         genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
         self._client = genai.GenerativeModel(self.model)
 
-    def generate(self, prompt: str) -> GenerativeModelResponse:
+    def generate(self, prompt: str, temperature: Optional[float]) -> GenerativeModelResponse:
         try:
             chat = self._client.start_chat()
-            chat_completion = chat.send_message(prompt, safety_settings=safety_settings)
+            chat_completion = chat.send_message(prompt, safety_settings=safety_settings,
+                                                generation_config=GenerationConfig(temperature=temperature))
             return GenerativeModelResponse(
                 generated_text=chat_completion.text,
                 prompt_token=self._client.count_tokens(prompt).total_tokens,

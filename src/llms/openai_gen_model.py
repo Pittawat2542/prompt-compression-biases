@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 from openai import OpenAI, APITimeoutError, APIConnectionError, RateLimitError, APIError
 
@@ -14,11 +14,12 @@ class OpenAIGenerativeModel(GenerativeModel):
         super().__init__(**data)
         self._client = OpenAI()
 
-    def generate(self, prompt: str) -> GenerativeModelResponse:
+    def generate(self, prompt: str, temperature: Optional[float]) -> GenerativeModelResponse:
         try:
             chat_completion = self._client.chat.completions.create(
                 model=self.model,
-                messages=[{"role": "user", "content": prompt}]
+                messages=[{"role": "user", "content": prompt}],
+                temperature=temperature
             )
             return GenerativeModelResponse(
                 generated_text=chat_completion.choices[0].message.content,

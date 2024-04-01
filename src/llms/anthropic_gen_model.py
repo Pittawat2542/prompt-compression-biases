@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 from anthropic import Anthropic, APITimeoutError, APIConnectionError, RateLimitError, APIError
 
@@ -14,12 +14,13 @@ class AnthropicGenerativeModel(GenerativeModel):
         super().__init__(**data)
         self._client = Anthropic()
 
-    def generate(self, prompt: str) -> GenerativeModelResponse:
+    def generate(self, prompt: str, temperature: Optional[float]) -> GenerativeModelResponse:
         try:
             chat_completion = self._client.messages.create(
                 model=self.model,
                 max_tokens=4096,
-                messages=[{"role": "user", "content": prompt}]
+                messages=[{"role": "user", "content": prompt}],
+                temperature=temperature
             )
             return GenerativeModelResponse(
                 generated_text=chat_completion.content[0].text,

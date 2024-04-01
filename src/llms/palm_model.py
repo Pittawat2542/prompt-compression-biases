@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 import google.generativeai as palm
 from google.api_core.exceptions import ServiceUnavailable, InternalServerError, TooManyRequests, DeadlineExceeded
@@ -16,9 +16,9 @@ class PaLMGenerativeModel(GenerativeModel):
         palm.configure(api_key=os.getenv("GOOGLE_API_KEY"))
         super().__init__(**data)
 
-    def generate(self, prompt: str) -> GenerativeModelResponse:
+    def generate(self, prompt: str, temperature: Optional[float]) -> GenerativeModelResponse:
         try:
-            chat_completion = palm.chat(messages=[prompt])
+            chat_completion = palm.chat(messages=[prompt], temperature=temperature,)
             return GenerativeModelResponse(
                 generated_text=chat_completion.last,
                 prompt_token=palm.count_message_tokens(prompt=prompt)['token_count'],
