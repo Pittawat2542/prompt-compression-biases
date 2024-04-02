@@ -14,7 +14,7 @@ class AnthropicGenerativeModel(GenerativeModel):
         super().__init__(**data)
         self._client = Anthropic()
 
-    def generate(self, prompt: str, temperature: Optional[float]) -> GenerativeModelResponse:
+    def generate(self, prompt: str, temperature: Optional[float] = 1.0) -> GenerativeModelResponse:
         try:
             chat_completion = self._client.messages.create(
                 model=self.model,
