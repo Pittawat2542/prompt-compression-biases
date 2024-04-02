@@ -27,7 +27,7 @@ class PaLMGenerativeModel(GenerativeModel):
             )
         except (ServiceUnavailable, InternalServerError, TooManyRequests, DeadlineExceeded) as e:
             print(f"Google (PaLM) API error: {e}")
-            return self.generate(prompt)
+            return self.generate(prompt, temperature)
         except Exception as e:
             print(f"Unexpected error: {e}")
             raise e

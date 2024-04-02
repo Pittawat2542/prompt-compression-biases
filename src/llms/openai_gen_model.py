@@ -29,7 +29,7 @@ class OpenAIGenerativeModel(GenerativeModel):
             )
         except (APITimeoutError, APIConnectionError, RateLimitError, APIError) as e:
             print(f"OpenAI API error: {e}")
-            return self.generate(prompt)
+            return self.generate(prompt, temperature=temperature)
         except Exception as e:
             print(f"Unexpected error: {e}")
             raise e
