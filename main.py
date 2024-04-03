@@ -203,6 +203,8 @@ def analyse():
                 results[approach][generation_model][from_story_data_ending_type] = {}
                 for ending_type in ['positive', 'negative', 'neutral']:
                     results[approach][generation_model][from_story_data_ending_type][ending_type] = 0
+                if ending_type not in results[approach][generation_model][from_story_data_ending_type]:
+                    results[approach][generation_model][from_story_data_ending_type][generated_story_ending_type] = 0
 
             results[approach][generation_model][from_story_data_ending_type][generated_story_ending_type] += 1
 
