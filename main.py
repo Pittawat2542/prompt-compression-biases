@@ -129,7 +129,6 @@ def evaluate_story(eval_model: Annotated[str, typer.Option()]):
     logger.info(f"Using model: {eval_model}")
 
     root_outputs_path = Path("outputs")
-    evaluation_output_path = root_outputs_path / f"{eval_model}/evaluation"
     models = [f for f in root_outputs_path.glob(f"*") if f.is_dir() and f.name != "logs"]
 
     for generation_model in models:
@@ -140,7 +139,7 @@ def evaluate_story(eval_model: Annotated[str, typer.Option()]):
             logger.info(f"Evaluating stories in folder: {ending_type.name}")
             story_influence_files = [f for f in ending_type.glob("*.json")]
 
-            output_path = evaluation_output_path / ending_type.name
+            output_path = root_outputs_path / generation_model.name / "evaluation" / ending_type.name
             output_path.mkdir(exist_ok=True, parents=True)
 
             i = 0
